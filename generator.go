@@ -1,12 +1,15 @@
 package nebula_poc
 
 import (
+	"errors"
 	"fmt"
 	"math/rand"
 	"time"
 
 	"github.com/google/uuid"
 )
+
+// What's relationship about cluster/database/dataset/table
 
 type User struct {
 	Source   string
@@ -64,11 +67,13 @@ type InheritEdge struct {
 }
 
 const (
-	UserCount    = 20
-	ClusterCount = 100
-	DbCount      = 1000            // 1k
-	DatasetCount = 50 * 10 * 1000  // 500k
-	JobCount     = 200 * 10 * 1000 // 2M
+	UserCount      = 20
+	ClusterCount   = 100
+	DbCount        = 1000            // 1k
+	DatasetCount   = 50 * 10 * 1000  // 500k
+	JobCount       = 200 * 10 * 1000 // 2M
+	StartEdgeCount = 500 * 10 * 1000 // 5M
+	EndEdgeCount   = 300 * 10 * 1000 // 3M
 )
 
 func GenerateUsers(size int) []User {
@@ -151,4 +156,81 @@ func GenerateJobs(size int64, users []User) []Job {
 		startTime = endTime + rand.Int63n(2048)
 	}
 	return jobs
+}
+
+func GenerateStartEndEdges(tables []Table, jobs []Job) (startEdges []StartEdge, endEdges []EndEdge) {
+	for _, job := range jobs {
+		numInEdges := rand.Intn(10)
+		for i := 0; i < numInEdges; i++ {
+			tblIdx := rand.Intn(len(tables))
+			startEdges = append(startEdges, StartEdge{
+				SrcTableVID: tables[tblIdx].VID,
+				JobVID:      job.VID,
+				StartTime:   job.StartTime,
+				EndTime:     job.EndTime,
+			})
+		}
+
+		numOutEdges := rand.Intn(10)
+		for i := 0; i < numOutEdges; i++ {
+			tblIdx := rand.Intn(len(tables))
+			endEdges = append(endEdges, EndEdge{
+				JobVID:      job.VID,
+				DstTableVID: tables[tblIdx].VID,
+				StartTime:   job.StartTime,
+				EndTime:     job.EndTime,
+			})
+		}
+	}
+
+	return startEdges, endEdges
+}
+
+func GenerateInhritEdges(tables []Table, jobs []Job, startEdges []StartEdge, endEdges []EndEdge) (inheritEdges []InheritEdge) {
+	for _, startEdge := range startEdges {
+		srcTableVID := startEdge.SrcTableVID
+		jobVID := startEdge.JobVID
+
+		job, _ := GetJobByVID(jobs, jobVID)
+		for _, dstTable := range GetDstTableByJobVID(endEdges, tables, jobVID) {
+			inheritEdges = append(inheritEdges, InheritEdge{
+				SrcTableVID: srcTableVID,
+				DstTableVID: dstTable.VID,
+				JobVID:      jobVID,
+				StartTime:   job.StartTime,
+				EndTime:     job.EndTime,
+			})
+		}
+
+	}
+	return inheritEdges
+}
+
+func GetTableByVID(tables []Table, vid int64) (Table, error) {
+	for _, table := range tables {
+		if table.VID == vid {
+			return table, nil
+		}
+	}
+	return Table{}, errors.New(fmt.Sprintf("Invalid vid: %d", vid))
+}
+
+func GetJobByVID(jobs []Job, vid int64) (Job, error) {
+	for _, job := range jobs {
+		if job.VID == vid {
+			return job, nil
+		}
+	}
+	return Job{}, errors.New(fmt.Sprintf("Invalid job vid: %d", vid))
+}
+
+func GetDstTableByJobVID(endEdges []EndEdge, tables []Table, jobVID int64) []Table {
+	var results []Table
+	for _, endEdge := range endEdges {
+		if endEdge.JobVID == jobVID {
+			dstTable, _ := GetTableByVID(tables, endEdge.DstTableVID)
+			results = append(results, dstTable)
+		}
+	}
+	return results
 }
