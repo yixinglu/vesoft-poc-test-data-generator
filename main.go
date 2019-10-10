@@ -83,8 +83,8 @@ func exportToCSVFile(filename string, ifaces []interface{}) {
 
 	writer := csv.NewWriter(file)
 
-	for _, table := range ifaces {
-		writer.Write(Record(table))
+	for _, iface := range ifaces {
+		writer.Write(Record(iface))
 	}
 
 	writer.Flush()
