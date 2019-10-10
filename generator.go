@@ -37,30 +37,30 @@ type Job struct {
 	HiveUser      string
 	OperationName string
 	JobType       string
-	StartTime     time.Time
-	EndTime       time.Time
+	StartTime     int64
+	EndTime       int64
 }
 
 type StartEdge struct {
 	SrcTableVID int64
 	JobVID      int64
-	StartTime   time.Time
-	EndTime     time.Time
+	StartTime   int64
+	EndTime     int64
 }
 
 type EndEdge struct {
 	JobVID      int64
 	DstTableVID int64
-	StartTime   time.Time
-	EndTime     time.Time
+	StartTime   int64
+	EndTime     int64
 }
 
 type InheritEdge struct {
 	SrcTableVID int64
 	DstTableVID int64
 	JobVID      int64
-	StartTime   time.Time
-	EndTime     time.Time
+	StartTime   int64
+	EndTime     int64
 }
 
 const (
@@ -123,22 +123,32 @@ func GenerateTables(size int64, databases []Database, clusters []Cluster, users 
 
 var JobServerIps = [...]string{"11.36.96.2", "11.36.96.3", "11.36.96.4", "11.36.96.5"}
 var OperationNames = [...]string{"QUERY", "DDL", "DML"}
+var JobTypes = [...]string{"hive", "mysql"}
 
 func GenerateJobs(size int64, users []User) []Job {
 	jobs := make([]Job, size)
+	startTime := time.Now().Unix()
+	var endTime int64
 	for idx := range jobs {
 		vid := int64(idx)
 		uuid := uuid.New()
 		userId := rand.Intn(len(users))
 		jobServerIpIdx := rand.Intn(len(JobServerIps))
 		opNameIdx := rand.Intn(len(OperationNames))
+		jobTypeIdx := rand.Intn(len(JobTypes))
+		endTime = startTime + rand.Int63n(1024)
 		jobs[idx] = Job{
 			VID:           vid,
 			JobId:         uuid.String(),
 			JobServerIp:   JobServerIps[jobServerIpIdx],
 			HiveUser:      users[userId].Username,
 			OperationName: OperationNames[opNameIdx],
+			JobType:       JobTypes[jobTypeIdx],
+			StartTime:     startTime,
+			EndTime:       endTime,
 		}
+
+		startTime = endTime + rand.Int63n(2048)
 	}
 	return jobs
 }
