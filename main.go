@@ -29,15 +29,6 @@ func main() {
 	exportInheritEdgesToCSVFile("inherit.csv", inheritEdges)
 }
 
-func Record(t interface{}) []string {
-	numFields := reflect.ValueOf(t).Elem().NumField()
-	record := make([]string, numFields)
-	for i := range record {
-		record[i] = fmt.Sprintf("%v", reflect.ValueOf(t).Elem().Field(i).Interface())
-	}
-	return record
-}
-
 func exportTablesToCSVFile(filename string, tables []gen.Table) {
 	ifaces := make([]interface{}, len(tables))
 	for i := range tables {
@@ -97,4 +88,13 @@ func exportToCSVFile(filename string, ifaces []interface{}) {
 	}
 
 	writer.Flush()
+}
+
+func Record(t interface{}) []string {
+	numFields := reflect.ValueOf(t).Elem().NumField()
+	record := make([]string, numFields)
+	for i := range record {
+		record[i] = fmt.Sprintf("%v", reflect.ValueOf(t).Elem().Field(i).Interface())
+	}
+	return record
 }
