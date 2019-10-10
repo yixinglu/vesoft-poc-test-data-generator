@@ -84,14 +84,17 @@ func exportInheritEdgesToCSVFile(filename string, edges []gen.InheritEdge) {
 }
 
 func exportToCSVFile(filename string, ifaces []interface{}) {
-	tablecsv, err := os.Create(filename)
+	file, err := os.Create(filename)
 	if err != nil {
 		log.Fatal(err)
 	}
+	defer file.Close()
 
-	writer := csv.NewWriter(tablecsv)
+	writer := csv.NewWriter(file)
 
 	for _, table := range ifaces {
 		writer.Write(Record(table))
 	}
+
+	writer.Flush()
 }
