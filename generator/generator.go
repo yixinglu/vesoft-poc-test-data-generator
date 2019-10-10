@@ -1,9 +1,11 @@
-package nebula_poc
+package generator
 
 import (
 	"errors"
 	"fmt"
+	"log"
 	"math/rand"
+	"strings"
 	"time"
 
 	"github.com/google/uuid"
@@ -33,6 +35,11 @@ type Table struct {
 	Source    string
 }
 
+func (t *Table) String() string {
+	return fmt.Sprintf("table(vid:%d, dataset:%d, db:%d, name:%s, cluster:%s, source:%s)",
+		t.VID, t.DatasetId, t.DbId, t.TableName, t.Cluster, t.Source)
+}
+
 type Job struct {
 	VID           int64
 	JobId         string
@@ -44,11 +51,20 @@ type Job struct {
 	EndTime       int64
 }
 
+func (j *Job) String() string {
+	return fmt.Sprintf("job(vid:%d, id:%s, serverip:%s, hiveuser:%s, op:%s, type:%s, start:%d, end:%d)",
+		j.VID, j.JobId, j.JobServerIp, j.HiveUser, j.OperationName, j.JobType, j.StartTime, j.EndTime)
+}
+
 type StartEdge struct {
 	SrcTableVID int64
 	JobVID      int64
 	StartTime   int64
 	EndTime     int64
+}
+
+func (e *StartEdge) String() string {
+	return fmt.Sprintf("start: %d -> %d, start:%d, end:%d", e.SrcTableVID, e.JobVID, e.StartTime, e.EndTime)
 }
 
 type EndEdge struct {
@@ -58,12 +74,20 @@ type EndEdge struct {
 	EndTime     int64
 }
 
+func (e *EndEdge) String() string {
+	return fmt.Sprintf("end: %d -> %d, start: %d, end: %d", e.JobVID, e.DstTableVID, e.StartTime, e.EndTime)
+}
+
 type InheritEdge struct {
 	SrcTableVID int64
 	DstTableVID int64
 	JobVID      int64
 	StartTime   int64
 	EndTime     int64
+}
+
+func (e *InheritEdge) String() string {
+	return fmt.Sprintf("inherit: %d -> %d, job: %d, start: %d, end: %d", e.SrcTableVID, e.DstTableVID, e.JobVID, e.StartTime, e.EndTime)
 }
 
 const (
@@ -122,6 +146,8 @@ func GenerateTables(size int64, databases []Database, clusters []Cluster, users 
 			TableName: fmt.Sprintf("table%d", idx),
 			Source:    users[userId].Source,
 		}
+
+		log.Println(tables[idx].String())
 	}
 	return tables
 }
@@ -144,7 +170,7 @@ func GenerateJobs(size int64, users []User) []Job {
 		endTime = startTime + rand.Int63n(1024)
 		jobs[idx] = Job{
 			VID:           vid,
-			JobId:         uuid.String(),
+			JobId:         strings.Replace(uuid.String(), "-", "", -1),
 			JobServerIp:   JobServerIps[jobServerIpIdx],
 			HiveUser:      users[userId].Username,
 			OperationName: OperationNames[opNameIdx],
@@ -154,6 +180,7 @@ func GenerateJobs(size int64, users []User) []Job {
 		}
 
 		startTime = endTime + rand.Int63n(2048)
+		log.Println(jobs[idx].String())
 	}
 	return jobs
 }
@@ -163,23 +190,27 @@ func GenerateStartEndEdges(tables []Table, jobs []Job) (startEdges []StartEdge, 
 		numInEdges := rand.Intn(10)
 		for i := 0; i < numInEdges; i++ {
 			tblIdx := rand.Intn(len(tables))
-			startEdges = append(startEdges, StartEdge{
+			startEdge := StartEdge{
 				SrcTableVID: tables[tblIdx].VID,
 				JobVID:      job.VID,
 				StartTime:   job.StartTime,
 				EndTime:     job.EndTime,
-			})
+			}
+			startEdges = append(startEdges, startEdge)
+			log.Println(startEdge.String())
 		}
 
 		numOutEdges := rand.Intn(10)
 		for i := 0; i < numOutEdges; i++ {
 			tblIdx := rand.Intn(len(tables))
-			endEdges = append(endEdges, EndEdge{
+			endEdge := EndEdge{
 				JobVID:      job.VID,
 				DstTableVID: tables[tblIdx].VID,
 				StartTime:   job.StartTime,
 				EndTime:     job.EndTime,
-			})
+			}
+			endEdges = append(endEdges, endEdge)
+			log.Println(endEdge.String())
 		}
 	}
 
@@ -193,15 +224,16 @@ func GenerateInhritEdges(tables []Table, jobs []Job, startEdges []StartEdge, end
 
 		job, _ := GetJobByVID(jobs, jobVID)
 		for _, dstTable := range GetDstTableByJobVID(endEdges, tables, jobVID) {
-			inheritEdges = append(inheritEdges, InheritEdge{
+			inheritEdge := InheritEdge{
 				SrcTableVID: srcTableVID,
 				DstTableVID: dstTable.VID,
 				JobVID:      jobVID,
 				StartTime:   job.StartTime,
 				EndTime:     job.EndTime,
-			})
+			}
+			inheritEdges = append(inheritEdges, inheritEdge)
+			log.Println(inheritEdge.String())
 		}
-
 	}
 	return inheritEdges
 }
@@ -212,7 +244,7 @@ func GetTableByVID(tables []Table, vid int64) (Table, error) {
 			return table, nil
 		}
 	}
-	return Table{}, errors.New(fmt.Sprintf("Invalid vid: %d", vid))
+	return Table{}, errors.New(fmt.Sprintf("Invalid table vid: %d", vid))
 }
 
 func GetJobByVID(jobs []Job, vid int64) (Job, error) {
