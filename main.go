@@ -3,7 +3,7 @@ package main
 import (
 	"sync"
 
-	gen "github.com/yixinglu/webank-poc-test-data-generator/generator"
+	gen "github.com/yixinglu/vesoft-poc-test-data-generator/generator"
 )
 
 func main() {

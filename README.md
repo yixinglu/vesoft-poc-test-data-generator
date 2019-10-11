@@ -1,3 +1,3 @@
-# Webank PoC Test Data Generator
+# VEsoft PoC Test Data Generator
 
-VEsoft test data generator for WeBank PoC
+VEsoft test data generator for WB PoC
