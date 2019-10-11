@@ -35,11 +35,6 @@ type Table struct {
 	Source    string
 }
 
-func (t *Table) String() string {
-	return fmt.Sprintf("table(vid:%d, dataset:%d, db:%d, name:%s, cluster:%s, source:%s)",
-		t.VID, t.DatasetId, t.DbId, t.TableName, t.Cluster, t.Source)
-}
-
 type Job struct {
 	VID           int64
 	JobId         string
@@ -51,20 +46,11 @@ type Job struct {
 	EndTime       int64
 }
 
-func (j *Job) String() string {
-	return fmt.Sprintf("job(vid:%d, id:%s, serverip:%s, hiveuser:%s, op:%s, type:%s, start:%d, end:%d)",
-		j.VID, j.JobId, j.JobServerIp, j.HiveUser, j.OperationName, j.JobType, j.StartTime, j.EndTime)
-}
-
 type StartEdge struct {
 	SrcTableVID int64
 	JobVID      int64
 	StartTime   int64
 	EndTime     int64
-}
-
-func (e *StartEdge) String() string {
-	return fmt.Sprintf("start: %d -> %d, start:%d, end:%d", e.SrcTableVID, e.JobVID, e.StartTime, e.EndTime)
 }
 
 type EndEdge struct {
@@ -74,20 +60,12 @@ type EndEdge struct {
 	EndTime     int64
 }
 
-func (e *EndEdge) String() string {
-	return fmt.Sprintf("end: %d -> %d, start: %d, end: %d", e.JobVID, e.DstTableVID, e.StartTime, e.EndTime)
-}
-
 type InheritEdge struct {
 	SrcTableVID int64
 	DstTableVID int64
 	JobVID      int64
 	StartTime   int64
 	EndTime     int64
-}
-
-func (e *InheritEdge) String() string {
-	return fmt.Sprintf("inherit: %d -> %d, job: %d, start: %d, end: %d", e.SrcTableVID, e.DstTableVID, e.JobVID, e.StartTime, e.EndTime)
 }
 
 const (
@@ -99,6 +77,29 @@ const (
 	StartEdgeCount = 500 * 10 * 1000 // 5M
 	EndEdgeCount   = 300 * 10 * 1000 // 3M
 )
+
+func (t *Table) String() string {
+	return fmt.Sprintf("table(vid:%d, dataset:%d, db:%d, name:%s, cluster:%s, source:%s)",
+		t.VID, t.DatasetId, t.DbId, t.TableName, t.Cluster, t.Source)
+}
+
+func (j *Job) String() string {
+	return fmt.Sprintf("job(vid:%d, id:%s, serverip:%s, hiveuser:%s, op:%s, type:%s, start:%d, end:%d)",
+		j.VID, j.JobId, j.JobServerIp, j.HiveUser, j.OperationName, j.JobType, j.StartTime, j.EndTime)
+}
+
+func (e *StartEdge) String() string {
+	return fmt.Sprintf("start: %d -> %d, start:%d, end:%d", e.SrcTableVID, e.JobVID, e.StartTime, e.EndTime)
+}
+
+func (e *EndEdge) String() string {
+	return fmt.Sprintf("end: %d -> %d, start: %d, end: %d", e.JobVID, e.DstTableVID, e.StartTime, e.EndTime)
+}
+
+func (e *InheritEdge) String() string {
+	return fmt.Sprintf("inherit: %d -> %d, job: %d, start: %d, end: %d",
+		e.SrcTableVID, e.DstTableVID, e.JobVID, e.StartTime, e.EndTime)
+}
 
 func GenerateUsers(size int) []User {
 	users := make([]User, size)
