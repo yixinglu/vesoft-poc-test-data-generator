@@ -6,6 +6,7 @@ import (
 	"log"
 	"math/rand"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/google/uuid"
@@ -223,8 +224,17 @@ func GenerateInhritEdges(tables []Table, jobs []Job, startEdges []StartEdge, end
 		srcTableVID := startEdge.SrcTableVID
 		jobVID := startEdge.JobVID
 
-		job, _ := GetJobByVID(jobs, jobVID)
-		for _, dstTable := range GetDstTableByJobVID(endEdges, tables, jobVID) {
+		var wg sync.WaitGroup
+
+		var job Job
+		GetJobByVIDAsync(jobs, jobVID, &job, &wg)
+
+		var dstTables []Table
+		GetDstTablesByJobVIDAsync(endEdges, tables, jobVID, &dstTables, &wg)
+
+		wg.Wait()
+
+		for _, dstTable := range dstTables {
 			inheritEdge := InheritEdge{
 				SrcTableVID: srcTableVID,
 				DstTableVID: dstTable.VID,
@@ -248,6 +258,15 @@ func GetTableByVID(tables []Table, vid int64) (Table, error) {
 	return Table{}, errors.New(fmt.Sprintf("Invalid table vid: %d", vid))
 }
 
+func GetJobByVIDAsync(jobs []Job, vid int64, job *Job, wg *sync.WaitGroup) {
+	wg.Add(1)
+	go func(wg *sync.WaitGroup) {
+		j, _ := GetJobByVID(jobs, vid)
+		job = &j
+		wg.Done()
+	}(wg)
+}
+
 func GetJobByVID(jobs []Job, vid int64) (Job, error) {
 	for _, job := range jobs {
 		if job.VID == vid {
@@ -257,7 +276,16 @@ func GetJobByVID(jobs []Job, vid int64) (Job, error) {
 	return Job{}, errors.New(fmt.Sprintf("Invalid job vid: %d", vid))
 }
 
-func GetDstTableByJobVID(endEdges []EndEdge, tables []Table, jobVID int64) []Table {
+func GetDstTablesByJobVIDAsync(endEdges []EndEdge, tables []Table, jobVID int64, dstTables *[]Table, wg *sync.WaitGroup) {
+	wg.Add(1)
+	go func(wg *sync.WaitGroup) {
+		dstTbls := GetDstTablesByJobVID(endEdges, tables, jobVID)
+		dstTables = &dstTbls
+		wg.Done()
+	}(wg)
+}
+
+func GetDstTablesByJobVID(endEdges []EndEdge, tables []Table, jobVID int64) []Table {
 	var results []Table
 	for _, endEdge := range endEdges {
 		if endEdge.JobVID == jobVID {
