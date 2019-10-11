@@ -7,13 +7,11 @@ import (
 )
 
 const (
-	userCount      = 20
-	clusterCount   = 100
-	DbCount        = 1000            // 1k
-	datasetCount   = 50 * 10 * 1000  // 500k
-	jobCount       = 200 * 10 * 1000 // 2M
-	StartEdgeCount = 500 * 10 * 1000 // 5M
-	EndEdgeCount   = 300 * 10 * 1000 // 3M
+	userCount    = 20
+	clusterCount = 100
+	dbCount      = 1000            // 1k
+	datasetCount = 50 * 10 * 1000  // 500k
+	jobCount     = 200 * 10 * 1000 // 2M
 )
 
 func main() {
