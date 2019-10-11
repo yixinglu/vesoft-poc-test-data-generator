@@ -69,16 +69,6 @@ type InheritEdge struct {
 	EndTime     int64
 }
 
-const (
-	UserCount      = 20
-	ClusterCount   = 100
-	DbCount        = 1000            // 1k
-	DatasetCount   = 50 * 10 * 1000  // 500k
-	JobCount       = 200 * 10 * 1000 // 2M
-	StartEdgeCount = 500 * 10 * 1000 // 5M
-	EndEdgeCount   = 300 * 10 * 1000 // 3M
-)
-
 func (t *Table) String() string {
 	return fmt.Sprintf("table(vid:%d, dataset:%d, db:%d, name:%s, cluster:%s, source:%s)",
 		t.VID, t.DatasetId, t.DbId, t.TableName, t.Cluster, t.Source)
