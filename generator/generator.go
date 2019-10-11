@@ -191,7 +191,7 @@ func GenerateJobs(size int64, users []User) []Job {
 	return jobs
 }
 
-func GenerateStartEndEdges(tables []Table, jobs []Job) (startEdges []StartEdge, endEdges []EndEdge) {
+func GenerateEdges(tables []Table, jobs []Job) (startEdges []StartEdge, endEdges []EndEdge, inheritEdges []InheritEdge) {
 	for _, job := range jobs {
 		numInEdges := rand.Intn(10)
 		for i := 0; i < numInEdges; i++ {
@@ -218,10 +218,25 @@ func GenerateStartEndEdges(tables []Table, jobs []Job) (startEdges []StartEdge, 
 			endEdges = append(endEdges, endEdge)
 			// log.Println(endEdge.String())
 		}
+
+		for _, startEdge := range startEdges[len(startEdges)-numInEdges:] {
+			for _, endEdge := range endEdges[len(endEdges)-numOutEdges:] {
+				inheritEdge := InheritEdge{
+					SrcTableVID: startEdge.SrcTableVID,
+					DstTableVID: endEdge.DstTableVID,
+					JobVID:      job.VID,
+					StartTime:   job.StartTime,
+					EndTime:     job.EndTime,
+				}
+				inheritEdges = append(inheritEdges, inheritEdge)
+				// log.Println(inheritEdge.String())
+			}
+		}
 	}
 
-	log.Printf("Finish generate start edges(%d) and end edges(%d)", len(startEdges), len(endEdges))
-	return startEdges, endEdges
+	log.Printf("Finish generate start edges(%d), end edges(%d) and inherit edges(%d)",
+		len(startEdges), len(endEdges), len(inheritEdges))
+	return startEdges, endEdges, inheritEdges
 }
 
 func GenerateInhritEdges(tables []Table, jobs []Job, startEdges []StartEdge, endEdges []EndEdge) (inheritEdges []InheritEdge) {

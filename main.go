@@ -59,12 +59,10 @@ func main() {
 	gen.ExportTablesToCSVFile("tables.csv", tables, &exportWG)
 	gen.ExportJobsToCSVFile("jobs.csv", jobs, &exportWG)
 
-	startEdges, endEdges := gen.GenerateStartEndEdges(tables, jobs)
+	startEdges, endEdges, inheritEdges := gen.GenerateEdges(tables, jobs)
 
 	gen.ExportStartEdgesToCSVFile("start.csv", startEdges, &exportWG)
 	gen.ExportEndEdgesToCSVFile("end.csv", endEdges, &exportWG)
-
-	inheritEdges := gen.GenerateInhritEdges(tables, jobs, startEdges, endEdges)
 	gen.ExportInheritEdgesToCSVFile("inherit.csv", inheritEdges, &exportWG)
 
 	exportWG.Wait()
