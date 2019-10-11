@@ -149,8 +149,10 @@ func GenerateTables(size int64, databases []Database, clusters []Cluster, users 
 			Source:    users[userId].Source,
 		}
 
-		log.Println(tables[idx].String())
+		// log.Println(tables[idx].String())
 	}
+
+	log.Printf("Finish generate tables: %d", len(tables))
 	return tables
 }
 
@@ -182,8 +184,10 @@ func GenerateJobs(size int64, users []User) []Job {
 		}
 
 		startTime = endTime + rand.Int63n(2048)
-		log.Println(jobs[idx].String())
+		// log.Println(jobs[idx].String())
 	}
+
+	log.Printf("Finish generate jobs: %d", len(jobs))
 	return jobs
 }
 
@@ -199,7 +203,7 @@ func GenerateStartEndEdges(tables []Table, jobs []Job) (startEdges []StartEdge, 
 				EndTime:     job.EndTime,
 			}
 			startEdges = append(startEdges, startEdge)
-			log.Println(startEdge.String())
+			// log.Println(startEdge.String())
 		}
 
 		numOutEdges := rand.Intn(10)
@@ -212,10 +216,11 @@ func GenerateStartEndEdges(tables []Table, jobs []Job) (startEdges []StartEdge, 
 				EndTime:     job.EndTime,
 			}
 			endEdges = append(endEdges, endEdge)
-			log.Println(endEdge.String())
+			// log.Println(endEdge.String())
 		}
 	}
 
+	log.Printf("Finish generate start edges(%d) and end edges(%d)", len(startEdges), len(endEdges))
 	return startEdges, endEdges
 }
 
@@ -243,9 +248,10 @@ func GenerateInhritEdges(tables []Table, jobs []Job, startEdges []StartEdge, end
 				EndTime:     job.EndTime,
 			}
 			inheritEdges = append(inheritEdges, inheritEdge)
-			log.Println(inheritEdge.String())
+			// log.Println(inheritEdge.String())
 		}
 	}
+	log.Printf("Finish generate inherit edges: %d", len(inheritEdges))
 	return inheritEdges
 }
 
