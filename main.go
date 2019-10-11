@@ -6,27 +6,85 @@ import (
 	"log"
 	"os"
 	"reflect"
+	"sync"
 
 	gen "github.com/yixinglu/webank-poc-test-data-generator/generator"
 )
 
 func main() {
 
-	clusters := gen.GenerateCluster(gen.ClusterCount)
-	users := gen.GenerateUsers(gen.UserCount)
-	databases := gen.GenerateDatabases(gen.DatasetCount)
-	tables := gen.GenerateTables(gen.DatasetCount, databases, clusters, users)
-	jobs := gen.GenerateJobs(gen.JobCount, users)
+	var prepareWG sync.WaitGroup
+
+	// Cluster
+	var clusters []gen.Cluster
+	prepareWG.Add(1)
+	go func(wg *sync.WaitGroup) {
+		clusters = gen.GenerateCluster(gen.ClusterCount)
+		wg.Done()
+	}(&prepareWG)
+
+	// User
+	var users []gen.User
+	prepareWG.Add(1)
+	go func(wg *sync.WaitGroup) {
+		users = gen.GenerateUsers(gen.UserCount)
+		wg.Done()
+	}(&prepareWG)
+
+	// Database
+	var databases []gen.Database
+	prepareWG.Add(1)
+	go func(wg *sync.WaitGroup) {
+		databases = gen.GenerateDatabases(gen.DatasetCount)
+		wg.Done()
+	}(&prepareWG)
+
+	prepareWG.Wait()
+
+	var vertexWG, exportWG sync.WaitGroup
+
+	// Table
+	var tables []gen.Table
+	vertexWG.Add(1)
+	exportWG.Add(1)
+	go func(wg *sync.WaitGroup, expWG *sync.WaitGroup) {
+		tables = gen.GenerateTables(gen.DatasetCount, databases, clusters, users)
+		wg.Done()
+		exportTablesToCSVFile("tables.csv", tables)
+		expWG.Done()
+	}(&vertexWG, &exportWG)
+
+	// Job
+	var jobs []gen.Job
+	vertexWG.Add(1)
+	exportWG.Add(1)
+	go func(wg *sync.WaitGroup, expWG *sync.WaitGroup) {
+		jobs = gen.GenerateJobs(gen.JobCount, users)
+		wg.Done()
+		exportJobsToCSVFile("jobs.csv", jobs)
+		expWG.Done()
+	}(&vertexWG, &exportWG)
+
+	vertexWG.Wait()
+
 	startEdges, endEdges := gen.GenerateStartEndEdges(tables, jobs)
+
+	exportWG.Add(1)
+	go func(wg *sync.WaitGroup) {
+		exportStartEdgesToCSVFile("start.csv", startEdges)
+		wg.Done()
+	}(&exportWG)
+
+	exportWG.Add(1)
+	go func(wg *sync.WaitGroup) {
+		exportEndEdgesToCSVFile("end.csv", endEdges)
+		wg.Done()
+	}(&exportWG)
+
 	inheritEdges := gen.GenerateInhritEdges(tables, jobs, startEdges, endEdges)
-
-	log.Printf("inherit edges length: %d", len(inheritEdges))
-
-	exportTablesToCSVFile("tables.csv", tables)
-	exportJobsToCSVFile("jobs.csv", jobs)
-	exportStartEdgesToCSVFile("start.csv", startEdges)
-	exportEndEdgesToCSVFile("end.csv", endEdges)
 	exportInheritEdgesToCSVFile("inherit.csv", inheritEdges)
+
+	exportWG.Wait()
 }
 
 func exportTablesToCSVFile(filename string, tables []gen.Table) {
