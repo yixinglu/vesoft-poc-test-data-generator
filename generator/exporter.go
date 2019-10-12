@@ -9,6 +9,19 @@ import (
 	"sync"
 )
 
+func ExportDatabaseToCSVFile(filename string, databases []Database, wg *sync.WaitGroup) {
+	wg.Add(1)
+	go func(wg *sync.WaitGroup) {
+		ifaces := make([]interface{}, len(databases))
+		for i := range databases {
+			ifaces[i] = databases[i]
+		}
+
+		exportToCSVFile(filename, ifaces)
+		wg.Done()
+	}(wg)
+}
+
 func ExportTablesToCSVFile(filename string, tables []Table, wg *sync.WaitGroup) {
 	wg.Add(1)
 
@@ -66,6 +79,34 @@ func ExportEndEdgesToCSVFile(filename string, edges []EndEdge, wg *sync.WaitGrou
 }
 
 func ExportInheritEdgesToCSVFile(filename string, edges []InheritEdge, wg *sync.WaitGroup) {
+	wg.Add(1)
+
+	go func(wg *sync.WaitGroup) {
+		ifaces := make([]interface{}, len(edges))
+		for i := range edges {
+			ifaces[i] = edges[i]
+		}
+
+		exportToCSVFile(filename, ifaces)
+		wg.Done()
+	}(wg)
+}
+
+func ExportContainEdgesToCSVFile(filename string, edges []ContainEdge, wg *sync.WaitGroup) {
+	wg.Add(1)
+
+	go func(wg *sync.WaitGroup) {
+		ifaces := make([]interface{}, len(edges))
+		for i := range edges {
+			ifaces[i] = edges[i]
+		}
+
+		exportToCSVFile(filename, ifaces)
+		wg.Done()
+	}(wg)
+}
+
+func ExportReverseContainEdgesToCSVFile(filename string, edges []ReverseContainEdge, wg *sync.WaitGroup) {
 	wg.Add(1)
 
 	go func(wg *sync.WaitGroup) {

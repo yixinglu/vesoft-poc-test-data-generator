@@ -34,23 +34,23 @@ func main() {
 		wg.Done()
 	}(&prepareWG)
 
-	// Database
-	var databases []gen.Database
-	prepareWG.Add(1)
-	go func(wg *sync.WaitGroup) {
-		databases = gen.GenerateDatabases(datasetCount)
-		wg.Done()
-	}(&prepareWG)
-
 	prepareWG.Wait()
 
 	var vertexWG, exportWG sync.WaitGroup
+
+	// Database
+	var databases []gen.Database
+	vertexWG.Add(1)
+	go func(wg *sync.WaitGroup) {
+		databases = gen.GenerateDatabases(dbCount)
+		wg.Done()
+	}(&vertexWG)
 
 	// Table
 	var tables []gen.Table
 	vertexWG.Add(1)
 	go func(wg *sync.WaitGroup) {
-		tables = gen.GenerateTables(datasetCount, databases, clusters, users)
+		tables = gen.GenerateTables(datasetCount, clusters, users)
 		wg.Done()
 	}(&vertexWG)
 
@@ -64,14 +64,40 @@ func main() {
 
 	vertexWG.Wait()
 
+	gen.ExportDatabaseToCSVFile("db.csv", databases, &exportWG)
 	gen.ExportTablesToCSVFile("tables.csv", tables, &exportWG)
 	gen.ExportJobsToCSVFile("jobs.csv", jobs, &exportWG)
 
-	startEdges, endEdges, inheritEdges := gen.GenerateEdges(tables, jobs)
+	exportWG.Add(1)
+	go generateAndExportDbRelatedEdges(tables, databases, &exportWG)
 
-	gen.ExportStartEdgesToCSVFile("start.csv", startEdges, &exportWG)
-	gen.ExportEndEdgesToCSVFile("end.csv", endEdges, &exportWG)
-	gen.ExportInheritEdgesToCSVFile("inherit.csv", inheritEdges, &exportWG)
+	exportWG.Add(1)
+	go generateAndExportJobRelatedEdges(tables, jobs, &exportWG)
 
 	exportWG.Wait()
+}
+
+func generateAndExportDbRelatedEdges(tables []gen.Table, databases []gen.Database, wg *sync.WaitGroup) {
+	containEdges, reverseContainEdges := gen.GenerateContainEdge(tables, databases)
+	var expWG sync.WaitGroup
+	gen.ExportContainEdgesToCSVFile("contain.csv", containEdges, &expWG)
+	gen.ExportReverseContainEdgesToCSVFile("reverse-contain.csv", reverseContainEdges, &expWG)
+
+	expWG.Wait()
+
+	wg.Done()
+}
+
+func generateAndExportJobRelatedEdges(tables []gen.Table, jobs []gen.Job, wg *sync.WaitGroup) {
+	startEdges, endEdges, inheritEdges := gen.GenerateEdges(tables, jobs)
+
+	var expWG sync.WaitGroup
+
+	gen.ExportStartEdgesToCSVFile("start.csv", startEdges, &expWG)
+	gen.ExportEndEdgesToCSVFile("end.csv", endEdges, &expWG)
+	gen.ExportInheritEdgesToCSVFile("inherit.csv", inheritEdges, &expWG)
+
+	expWG.Wait()
+
+	wg.Done()
 }

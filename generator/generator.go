@@ -24,13 +24,13 @@ type Cluster struct {
 }
 
 type Database struct {
+	VID  int64
 	DbId int64
 }
 
 type Table struct {
 	VID       int64
 	DatasetId int64
-	DbId      int64
 	Cluster   string
 	TableName string
 	Source    string
@@ -69,9 +69,19 @@ type InheritEdge struct {
 	EndTime     int64
 }
 
+type ContainEdge struct {
+	DbVID    int64
+	TableVID int64
+}
+
+type ReverseContainEdge struct {
+	TableVID int64
+	DbVID    int64
+}
+
 func (t *Table) String() string {
 	return fmt.Sprintf("table(vid:%d, dataset:%d, db:%d, name:%s, cluster:%s, source:%s)",
-		t.VID, t.DatasetId, t.DbId, t.TableName, t.Cluster, t.Source)
+		t.VID, t.DatasetId, t.TableName, t.Cluster, t.Source)
 }
 
 func (j *Job) String() string {
@@ -90,6 +100,14 @@ func (e *EndEdge) String() string {
 func (e *InheritEdge) String() string {
 	return fmt.Sprintf("inherit: %d -> %d, job: %d, start: %d, end: %d",
 		e.SrcTableVID, e.DstTableVID, e.JobVID, e.StartTime, e.EndTime)
+}
+
+func (e *ContainEdge) String() string {
+	return fmt.Sprintf("contain: %d -> %d", e.DbVID, e.TableVID)
+}
+
+func (e *ReverseContainEdge) String() string {
+	return fmt.Sprintf("contain: %d -> %d", e.TableVID, e.DbVID)
 }
 
 func GenerateUsers(size int) []User {
@@ -116,24 +134,25 @@ func GenerateCluster(size int64) []Cluster {
 func GenerateDatabases(size int64) []Database {
 	databases := make([]Database, size)
 	for idx := range databases {
+		vid := rand.Int63n(size)
 		databases[idx] = Database{
-			DbId: rand.Int63n(size),
+			VID:  vid,
+			DbId: vid,
 		}
 	}
+	log.Printf("Finish generate databases: %d", len(databases))
 	return databases
 }
 
-func GenerateTables(size int64, databases []Database, clusters []Cluster, users []User) []Table {
+func GenerateTables(size int64, clusters []Cluster, users []User) []Table {
 	tables := make([]Table, size)
 	for idx := range tables {
-		dbId := rand.Intn(len(databases))
 		clusterId := rand.Intn(len(clusters))
 		userId := rand.Intn(len(users))
 		vid := int64(idx)
 		tables[idx] = Table{
 			VID:       vid,
 			DatasetId: vid,
-			DbId:      databases[dbId].DbId,
 			Cluster:   clusters[clusterId].Name,
 			TableName: fmt.Sprintf("table%d", idx),
 			Source:    users[userId].Source,
@@ -179,6 +198,26 @@ func GenerateJobs(size int64, users []User) []Job {
 
 	log.Printf("Finish generate jobs: %d", len(jobs))
 	return jobs
+}
+
+func GenerateContainEdge(tables []Table, databases []Database) (containEdges []ContainEdge, reverseContainEdges []ReverseContainEdge) {
+	for _, table := range tables {
+		dbVID := rand.Intn(len(databases))
+		containEdge := ContainEdge{
+			DbVID:    databases[dbVID].VID,
+			TableVID: table.VID,
+		}
+		containEdges = append(containEdges, containEdge)
+		// log.Println(containEdge.String())
+		reverseContainEdge := ReverseContainEdge{
+			TableVID: table.VID,
+			DbVID:    databases[dbVID].VID,
+		}
+		reverseContainEdges = append(reverseContainEdges, reverseContainEdge)
+		// log.Println(reverseContainEdge.String())
+	}
+	log.Printf("Finish generate contain edges: %d, reverse contain edges: %d", len(containEdges), len(reverseContainEdges))
+	return containEdges, reverseContainEdges
 }
 
 func GenerateEdges(tables []Table, jobs []Job) (startEdges []StartEdge, endEdges []EndEdge, inheritEdges []InheritEdge) {
