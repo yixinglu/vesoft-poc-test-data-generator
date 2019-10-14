@@ -1,11 +1,12 @@
 package generator
 
 import (
-	"encoding/csv"
+	"bufio"
 	"fmt"
 	"log"
 	"os"
 	"reflect"
+	"strings"
 	"sync"
 )
 
@@ -127,10 +128,16 @@ func exportToCSVFile(filename string, ifaces []interface{}) {
 	}
 	defer file.Close()
 
-	writer := csv.NewWriter(file)
+	// writer := csv.NewWriter(file)
 
+	// for _, iface := range ifaces {
+	// 	writer.Write(Record(iface))
+	// }
+
+	writer := bufio.NewWriter(file)
 	for _, iface := range ifaces {
-		writer.Write(Record(iface))
+		writer.WriteString(strings.Join(Record(iface), ","))
+		writer.WriteString("\n")
 	}
 
 	writer.Flush()
@@ -140,7 +147,12 @@ func Record(t interface{}) []string {
 	numFields := reflect.ValueOf(t).NumField()
 	record := make([]string, numFields)
 	for i := range record {
-		record[i] = fmt.Sprintf("%v", reflect.ValueOf(t).Field(i).Interface())
+		f := reflect.ValueOf(t).Field(i)
+		if f.Type().Name() == "string" {
+			record[i] = fmt.Sprintf("\"%s\"", f.Interface())
+		} else {
+			record[i] = fmt.Sprintf("%v", f.Interface())
+		}
 	}
 	return record
 }
