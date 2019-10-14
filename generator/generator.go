@@ -39,7 +39,7 @@ func GenerateDatabases(size int64) []Database {
 		vid := rand.Int63n(size)
 		databases[idx] = Database{
 			VID:  vid,
-			DbId: vid,
+			DbId: fmt.Sprintf("%d", vid),
 		}
 	}
 	log.Printf("Finish generate databases: %d", len(databases))
@@ -54,7 +54,7 @@ func GenerateTables(size int64, clusters []Cluster, users []User) []Table {
 		vid := int64(idx)
 		tables[idx] = Table{
 			VID:       vid,
-			DatasetId: vid,
+			DatasetId: fmt.Sprintf("%d", vid),
 			Cluster:   clusters[clusterId].Name,
 			TableName: fmt.Sprintf("table%d", idx),
 			Source:    users[userId].Source,
