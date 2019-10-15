@@ -1,26 +1,56 @@
 #!/bin/bash
 
-NEBULA_IMPORTER=nebula-importer-1.0.0-beta.jar
-GRAPH_ADDR=127.0.0.1:3699
-NAMESPACE=wb
+set -exv
 
-if [ -n "$1" ];then
-  NEBULA_IMPORTER=$1
-fi
+NEBULA_IMPORTER=${1:-nebula-importer-1.0.0-beta.jar}
+GRAPH_ADDR=${2:-"127.0.0.1:3699"}
+NAMESPACE=${3:-wb}
 
-if [ -n "$2" ];then
-  GRAPH_ADDR=$2
-fi
+DIR="$(cd "$(dirname "$0")" && pwd)/.csv"
 
-if [ -n "$3" ];then
-  NAMESPACE=$3
-fi
+splitfile() {
+  CURR_DIR=$DIR/$1
+  mkdir -p $CURR_DIR && cd $CURR_DIR
+  total_lines=$(wc -l ../$1.csv | cut -f1 -d' ')
+  lines=$(($total_lines/10 + 1))
 
-java -jar $NEBULA_IMPORTER --address $GRAPH_ADDR --name $NAMESPACE --schema job -u user -p password -t vertex --file jobs.csv --column job_id,job_server_ip,hive_user,operation_name,job_type,start_time,end_time
-java -jar $NEBULA_IMPORTER --address $GRAPH_ADDR --name $NAMESPACE --schema tbl -u user -p password -t vertex --file tables.csv --column dataset_id,cluster,table_name,source
-java -jar $NEBULA_IMPORTER --address $GRAPH_ADDR --name $NAMESPACE --schema db -u user -p password -t vertex --file db.csv --column db_id
-java -jar $NEBULA_IMPORTER --address $GRAPH_ADDR --name $NAMESPACE --schema start -u user -p password -t edge --file start.csv --column start_time,end_time
-java -jar $NEBULA_IMPORTER --address $GRAPH_ADDR --name $NAMESPACE --schema end -u user -p password -t edge --file end.csv --column start_time,end_time
-java -jar $NEBULA_IMPORTER --address $GRAPH_ADDR --name $NAMESPACE --schema inherit -u user -p password -t edge --file inherit.csv --column job_id,start_time,end_time
-java -jar $NEBULA_IMPORTER --address $GRAPH_ADDR --name $NAMESPACE --schema contain -u user -p password -t edge --file contain.csv --column ""
-java -jar $NEBULA_IMPORTER --address $GRAPH_ADDR --name $NAMESPACE --schema reverse_contain -u user -p password -t edge --file reverse_contain.csv --column ""
+  split -a1 --additional-suffix=.csv -d -l $lines --verbose $DIR/$1.csv $1-
+}
+
+parallel() {
+  cd $DIR/$1
+  TYPE=${2:-vertex}
+  for i in {0..9}; do
+    java -jar $NEBULA_IMPORTER \
+         --address $GRAPH_ADDR \
+         --name $NAMESPACE \
+         --schema $1 \
+         -u user \
+         -p password \
+         -t $TYPE \
+         --file $1-$i.csv \
+         --column $3 \
+         -d $DIR/$1/err_data_$i.log \
+         &
+  done
+}
+
+cd $DIR
+for d in *.csv; do
+  dir=${d%.csv}
+  splitfile $dir
+done
+
+parallel job vertex "job_id,job_server_ip,hive_user,operation_name,job_type,start_time,end_time"
+parallel tbl vertex "dataset_id,cluster,table_name,source"
+parallel db vertex "db_id"
+
+wait
+
+parallel start edge "start_time,end_time"
+parallel end edge "start_time,end_time"
+parallel inherit edge "job_id,start_time,end_time"
+parallel contain edge ""
+parallel reverse_contain edge ""
+
+wait
