@@ -65,8 +65,8 @@ func main() {
 	vertexWG.Wait()
 
 	gen.ExportDatabaseToCSVFile("db.csv", databases, &exportWG)
-	gen.ExportTablesToCSVFile("tables.csv", tables, &exportWG)
-	gen.ExportJobsToCSVFile("jobs.csv", jobs, &exportWG)
+	gen.ExportTablesToCSVFile("tbl.csv", tables, &exportWG)
+	gen.ExportJobsToCSVFile("job.csv", jobs, &exportWG)
 
 	exportWG.Add(1)
 	go generateAndExportDbRelatedEdges(tables, databases, &exportWG)
