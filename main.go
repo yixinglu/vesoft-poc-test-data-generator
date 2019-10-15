@@ -1,6 +1,8 @@
 package main
 
 import (
+	"flag"
+	"fmt"
 	"sync"
 
 	gen "github.com/yixinglu/vesoft-poc-test-data-generator/generator"
@@ -14,7 +16,10 @@ const (
 	jobCount     = 200 * 10 * 1000 // 2M
 )
 
+var dir = flag.String("d", "./", "specify the directory of csv data files")
+
 func main() {
+	flag.Parse()
 
 	var prepareWG sync.WaitGroup
 
@@ -64,9 +69,9 @@ func main() {
 
 	vertexWG.Wait()
 
-	gen.ExportDatabaseToCSVFile("db.csv", databases, &exportWG)
-	gen.ExportTablesToCSVFile("tbl.csv", tables, &exportWG)
-	gen.ExportJobsToCSVFile("job.csv", jobs, &exportWG)
+	gen.ExportDatabaseToCSVFile(fmt.Sprintf("%s/%s", *dir, "db.csv"), databases, &exportWG)
+	gen.ExportTablesToCSVFile(fmt.Sprintf("%s/%s", *dir, "tbl.csv"), tables, &exportWG)
+	gen.ExportJobsToCSVFile(fmt.Sprintf("%s/%s", *dir, "job.csv"), jobs, &exportWG)
 
 	exportWG.Add(1)
 	go generateAndExportDbRelatedEdges(tables, databases, &exportWG)
@@ -80,8 +85,8 @@ func main() {
 func generateAndExportDbRelatedEdges(tables []gen.Table, databases []gen.Database, wg *sync.WaitGroup) {
 	containEdges, reverseContainEdges := gen.GenerateContainEdge(tables, databases)
 	var expWG sync.WaitGroup
-	gen.ExportContainEdgesToCSVFile("contain.csv", containEdges, &expWG)
-	gen.ExportReverseContainEdgesToCSVFile("reverse-contain.csv", reverseContainEdges, &expWG)
+	gen.ExportContainEdgesToCSVFile(fmt.Sprintf("%s/%s", *dir, "contain.csv"), containEdges, &expWG)
+	gen.ExportReverseContainEdgesToCSVFile(fmt.Sprintf("%s/%s", *dir, "reverse-contain.csv"), reverseContainEdges, &expWG)
 
 	expWG.Wait()
 
@@ -93,9 +98,9 @@ func generateAndExportJobRelatedEdges(tables []gen.Table, jobs []gen.Job, wg *sy
 
 	var expWG sync.WaitGroup
 
-	gen.ExportStartEdgesToCSVFile("start.csv", startEdges, &expWG)
-	gen.ExportEndEdgesToCSVFile("end.csv", endEdges, &expWG)
-	gen.ExportInheritEdgesToCSVFile("inherit.csv", inheritEdges, &expWG)
+	gen.ExportStartEdgesToCSVFile(fmt.Sprintf("%s/%s", *dir, "start.csv"), startEdges, &expWG)
+	gen.ExportEndEdgesToCSVFile(fmt.Sprintf("%s/%s", *dir, "end.csv"), endEdges, &expWG)
+	gen.ExportInheritEdgesToCSVFile(fmt.Sprintf("%s/%s", *dir, "inherit.csv"), inheritEdges, &expWG)
 
 	expWG.Wait()
 
