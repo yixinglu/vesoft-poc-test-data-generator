@@ -7,34 +7,56 @@ GRAPH_ADDR=${2:-"127.0.0.1:3699"}
 NAMESPACE=${3:-wb}
 
 DIR="$(cd "$(dirname "$0")" && pwd)/.csv"
-CONCURRENCY=10
+CONCURRENCY=20
 
 splitfile() {
   CURR_DIR=$DIR/$1
-  mkdir -p $CURR_DIR && cd $CURR_DIR
+  mkdir -p $CURR_DIR
+  pushd $CURR_DIR
   total_lines=$(wc -l ../$1.csv | cut -f1 -d' ')
   lines=$(($total_lines/$CONCURRENCY + 1))
+  split -a5 --additional-suffix=.csv -d -l $lines --verbose $DIR/$1.csv $1-
+  popd
+}
 
-  split -a1 --additional-suffix=.csv -d -l $lines --verbose $DIR/$1.csv $1-
+has_failure_data() {
+  for ((i=0; i<$CONCURRENCY; i++)); do
+    printf -v j "%05d" $i
+    if [ -s $1-$j.log ]; then
+      echo 1
+      break
+    fi
+  done
+  echo 0
 }
 
 parallel() {
-  cd $DIR/$1
-  TYPE=${2:-vertex}
+  CURR_DIR=$1
+  SCHEMA=$2
+  TYPE=${3:-vertex}
+  COLUMNS=$4
+  mkdir -p $CURR_DIR/err_data
   for ((i=0;i<$CONCURRENCY;i++)); do
+    printf -v j "%05d" $i
     java -jar $NEBULA_IMPORTER \
          --address $GRAPH_ADDR \
          --name $NAMESPACE \
-         --schema $1 \
+         --schema $SCHEMA \
          -u user \
          -p password \
+         -e 5 \
          -t $TYPE \
-         --column $3 \
-         -d $DIR/$1/err_data_$i.log \
-         --file $1-$i.csv \
+         --file $CURR_DIR/$SCHEMA-$j.csv \
+         -d $CURR_DIR/err_data/$SCHEMA-$j.log \
+         --column $COLUMNS \
          &
   done
   wait
+
+  # retry recursely
+  # if [ $(has_failure_data $CURR_DIR/err_data/$SCHEMA) -gt 0 ]; then
+  #   parallel $CURR_DIR/err_data $SCHEMA $TYPE $COLUMNS
+  # fi
 }
 
 for d in $DIR/*.csv; do
@@ -43,11 +65,11 @@ for d in $DIR/*.csv; do
   splitfile $dir
 done
 
-parallel job vertex "job_id,job_server_ip,hive_user,operation_name,job_type,start_time,end_time"
-parallel tbl vertex "dataset_id,cluster,table_name,source"
-parallel db vertex "db_id"
-parallel start edge "start_time,end_time"
-parallel end edge "start_time,end_time"
-parallel inherit edge "job_id,start_time,end_time"
-parallel contain edge ""
-parallel reverse_contain edge ""
+parallel $DIR/job job vertex "job_id,job_server_ip,hive_user,operation_name,job_type,start_time,end_time"
+parallel $DIR/tbl tbl vertex "dataset_id,cluster,table_name,source"
+parallel $DIR/db db vertex "db_id"
+parallel $DIR/start start edge "start_time,end_time"
+parallel $DIR/end end edge "start_time,end_time"
+parallel $DIR/inherit inherit edge "job_id,start_time,end_time"
+parallel $DIR/contain contain edge ""
+parallel $DIR/reverse_contain reverse_contain edge ""
