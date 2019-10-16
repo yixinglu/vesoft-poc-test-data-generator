@@ -155,7 +155,7 @@ func GenerateEdges(tables []Table, jobs []Job) (startEdges []StartEdge, endEdges
 				inheritEdge := InheritEdge{
 					SrcTableVID: startEdge.SrcTableVID,
 					DstTableVID: endEdge.DstTableVID,
-					JobVID:      job.VID,
+					JobVID:      fmt.Sprintf("%d", job.VID),
 					StartTime:   job.StartTime,
 					EndTime:     job.EndTime,
 				}
@@ -189,7 +189,7 @@ func GenerateInhritEdges(tables []Table, jobs []Job, startEdges []StartEdge, end
 			inheritEdge := InheritEdge{
 				SrcTableVID: srcTableVID,
 				DstTableVID: dstTable.VID,
-				JobVID:      jobVID,
+				JobVID:      fmt.Sprintf("%d", jobVID),
 				StartTime:   job.StartTime,
 				EndTime:     job.EndTime,
 			}
