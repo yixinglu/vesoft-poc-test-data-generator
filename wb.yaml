@@ -108,8 +108,8 @@ files:
       type: edge
       props: []
     error:
-      failDataPath: ./csv/reverse_contain/err/contain.csv
-      logPath: ./csv/reverse_contain/err/contain.log
+      failDataPath: ./csv/reverse_contain/err/reverse_contain.csv
+      logPath: ./csv/reverse_contain/err/reverse_contain.log
   - path: ./csv/inherit.csv
     type: csv
     schema:
