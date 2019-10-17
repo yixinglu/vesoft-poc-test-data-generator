@@ -56,7 +56,7 @@ type EndEdge struct {
 type InheritEdge struct {
 	SrcTableVID int64
 	DstTableVID int64
-	JobVID      string
+	JobID       string
 	StartTime   int64
 	EndTime     int64
 }
@@ -95,7 +95,7 @@ func (e *EndEdge) String() string {
 
 func (e *InheritEdge) String() string {
 	return fmt.Sprintf("inherit: %d -> %d, job: %s, start: %d, end: %d",
-		e.SrcTableVID, e.DstTableVID, e.JobVID, e.StartTime, e.EndTime)
+		e.SrcTableVID, e.DstTableVID, e.JobID, e.StartTime, e.EndTime)
 }
 
 func (e *ContainEdge) String() string {
