@@ -83,17 +83,19 @@ func main() {
 }
 
 func generateAndExportDbRelatedEdges(tables []gen.Table, databases []gen.Database, wg *sync.WaitGroup) {
+	defer wg.Done()
+
 	containEdges, reverseContainEdges := gen.GenerateContainEdge(tables, databases)
 	var expWG sync.WaitGroup
 	gen.ExportContainEdgesToCSVFile(fmt.Sprintf("%s/%s", *dir, "contain.csv"), containEdges, &expWG)
 	gen.ExportReverseContainEdgesToCSVFile(fmt.Sprintf("%s/%s", *dir, "reverse-contain.csv"), reverseContainEdges, &expWG)
 
 	expWG.Wait()
-
-	wg.Done()
 }
 
 func generateAndExportJobRelatedEdges(tables []gen.Table, jobs []gen.Job, wg *sync.WaitGroup) {
+	defer wg.Done()
+
 	startEdges, endEdges, inheritEdges := gen.GenerateEdges(tables, jobs)
 
 	var expWG sync.WaitGroup
@@ -103,6 +105,4 @@ func generateAndExportJobRelatedEdges(tables []gen.Table, jobs []gen.Job, wg *sy
 	gen.ExportInheritEdgesToCSVFile(fmt.Sprintf("%s/%s", *dir, "inherit.csv"), inheritEdges, &expWG)
 
 	expWG.Wait()
-
-	wg.Done()
 }
