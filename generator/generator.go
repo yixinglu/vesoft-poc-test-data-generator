@@ -212,11 +212,11 @@ func GetTableByVID(tables []Table, vid int64) (Table, error) {
 
 func GetJobByVIDAsync(jobs []Job, vid int64, job *Job, wg *sync.WaitGroup) {
 	wg.Add(1)
-	go func(wg *sync.WaitGroup) {
+	go func() {
+		defer wg.Done()
 		j, _ := GetJobByVID(jobs, vid)
 		job = &j
-		wg.Done()
-	}(wg)
+	}()
 }
 
 func GetJobByVID(jobs []Job, vid int64) (Job, error) {
@@ -230,11 +230,11 @@ func GetJobByVID(jobs []Job, vid int64) (Job, error) {
 
 func GetDstTablesByJobVIDAsync(endEdges []EndEdge, tables []Table, jobVID int64, dstTables *[]Table, wg *sync.WaitGroup) {
 	wg.Add(1)
-	go func(wg *sync.WaitGroup) {
+	go func() {
+		defer wg.Done()
 		dstTbls := GetDstTablesByJobVID(endEdges, tables, jobVID)
 		dstTables = &dstTbls
-		wg.Done()
-	}(wg)
+	}()
 }
 
 func GetDstTablesByJobVID(endEdges []EndEdge, tables []Table, jobVID int64) []Table {

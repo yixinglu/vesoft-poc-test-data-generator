@@ -26,18 +26,18 @@ func main() {
 	// Cluster
 	var clusters []gen.Cluster
 	prepareWG.Add(1)
-	go func(wg *sync.WaitGroup) {
+	go func() {
+		defer prepareWG.Done()
 		clusters = gen.GenerateCluster(clusterCount)
-		wg.Done()
-	}(&prepareWG)
+	}()
 
 	// User
 	var users []gen.User
 	prepareWG.Add(1)
-	go func(wg *sync.WaitGroup) {
+	go func() {
+		defer prepareWG.Done()
 		users = gen.GenerateUsers(userCount)
-		wg.Done()
-	}(&prepareWG)
+	}()
 
 	prepareWG.Wait()
 
@@ -46,26 +46,26 @@ func main() {
 	// Database
 	var databases []gen.Database
 	vertexWG.Add(1)
-	go func(wg *sync.WaitGroup) {
+	go func() {
+		defer vertexWG.Done()
 		databases = gen.GenerateDatabases(dbCount)
-		wg.Done()
-	}(&vertexWG)
+	}()
 
 	// Table
 	var tables []gen.Table
 	vertexWG.Add(1)
-	go func(wg *sync.WaitGroup) {
+	go func() {
+		defer vertexWG.Done()
 		tables = gen.GenerateTables(datasetCount, clusters, users)
-		wg.Done()
-	}(&vertexWG)
+	}()
 
 	// Job
 	var jobs []gen.Job
 	vertexWG.Add(1)
-	go func(wg *sync.WaitGroup) {
+	go func() {
+		defer vertexWG.Done()
 		jobs = gen.GenerateJobs(jobCount, users)
-		wg.Done()
-	}(&vertexWG)
+	}()
 
 	vertexWG.Wait()
 
