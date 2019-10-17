@@ -1,0 +1,128 @@
+version: v1beta
+description: example
+settings:
+  retry: 5
+  concurrency: 5 # Graph client pool size
+  connection:
+    user: user
+    password: password
+    address: 127.0.0.1:6699
+files:
+  - path: ./csv/job.csv
+    type: csv
+    schema:
+      space: wb
+      name: job
+      type: vertex
+      props:
+        - name: job_id
+          type: string
+        - name: job_server_ip
+          type: string
+        - name: hive_user
+          type: string
+        - name: operation_name
+          type: string
+        - name: job_type
+          type: string
+        - name: start_time
+          type: timestamp
+        - name: end_time
+          type: timestamp
+    error:
+      failDataPath: ./csv/job/err/job.csv
+      logPath: ./csv/job/err/job.log
+  - path: ./csv/tbl.csv
+    type: csv
+    schema:
+      space: wb
+      name: tbl
+      type: vertex
+      props:
+        - name: dataset_id
+          type: string
+        - name: cluster
+          type: string
+        - name: table_name
+          type: string
+        - name: source
+          type: string
+    error:
+      failDataPath: ./csv/tbl/err/tbl.csv
+      logPath: ./csv/tbl/err/tbl.log
+  - path: ./csv/db.csv
+    type: csv
+    schema:
+      space: wb
+      name: db
+      type: vertex
+      props:
+        - name: db_id
+          type: string
+    error:
+      failDataPath: ./csv/db/err/db.csv
+      logPath: ./csv/db/err/db.log
+  - path: ./csv/start.csv
+    type: csv
+    schema:
+      space: wb
+      name: start
+      type: edge
+      props:
+        - name: start_time
+          type: timestamp
+        - name: end_time
+          type: timestamp
+    error:
+      failDataPath: ./csv/start/err/start.csv
+      logPath: ./csv/start/err/start.log
+  - path: ./csv/end.csv
+    type: csv
+    schema:
+      space: wb
+      name: end
+      type: edge
+      props:
+        - name: start_time
+          type: timestamp
+        - name: end_time
+          type: timestamp
+    error:
+      failDataPath: ./csv/end/err/end.csv
+      logPath: ./csv/end/err/end.log
+  - path: ./csv/contain.csv
+    type: csv
+    schema:
+      space: wb
+      name: contain
+      type: edge
+      props: []
+    error:
+      failDataPath: ./csv/contain/err/contain.csv
+      logPath: ./csv/contain/err/contain.log
+  - path: ./csv/reverse_contain.csv
+    type: csv
+    schema:
+      space: wb
+      name: reverse_contain
+      type: edge
+      props: []
+    error:
+      failDataPath: ./csv/reverse_contain/err/contain.csv
+      logPath: ./csv/reverse_contain/err/contain.log
+  - path: ./csv/inherit.csv
+    type: csv
+    schema:
+      space: wb
+      name: inherit
+      type: edge
+      props:
+        - name: job_id
+          type: string
+        - name: start_time
+          type: timestamp
+        - name: end_time
+          type: timestamp
+    error:
+      failDataPath: ./csv/inherit/err/inherit.csv
+      logPath: ./csv/inherit/err/inherit.log
