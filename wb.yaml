@@ -30,8 +30,8 @@ files:
         - name: end_time
           type: timestamp
     error:
-      failDataPath: ./csv/job/err/job.csv
-      logPath: ./csv/job/err/job.log
+      failDataPath: ./csv/err/job.csv
+      logPath: ./csv/err/job.log
   - path: ./csv/tbl.csv
     type: csv
     schema:
@@ -48,8 +48,8 @@ files:
         - name: source
           type: string
     error:
-      failDataPath: ./csv/tbl/err/tbl.csv
-      logPath: ./csv/tbl/err/tbl.log
+      failDataPath: ./csv/err/tbl.csv
+      logPath: ./csv/err/tbl.log
   - path: ./csv/db.csv
     type: csv
     schema:
@@ -60,8 +60,8 @@ files:
         - name: db_id
           type: string
     error:
-      failDataPath: ./csv/db/err/db.csv
-      logPath: ./csv/db/err/db.log
+      failDataPath: ./csv/err/db.csv
+      logPath: ./csv/err/db.log
   - path: ./csv/start.csv
     type: csv
     schema:
@@ -74,8 +74,8 @@ files:
         - name: end_time
           type: timestamp
     error:
-      failDataPath: ./csv/start/err/start.csv
-      logPath: ./csv/start/err/start.log
+      failDataPath: ./csv/err/start.csv
+      logPath: ./csv/err/start.log
   - path: ./csv/end.csv
     type: csv
     schema:
@@ -88,28 +88,8 @@ files:
         - name: end_time
           type: timestamp
     error:
-      failDataPath: ./csv/end/err/end.csv
-      logPath: ./csv/end/err/end.log
-  - path: ./csv/contain.csv
-    type: csv
-    schema:
-      space: wb
-      name: contain
-      type: edge
-      props: []
-    error:
-      failDataPath: ./csv/contain/err/contain.csv
-      logPath: ./csv/contain/err/contain.log
-  - path: ./csv/reverse_contain.csv
-    type: csv
-    schema:
-      space: wb
-      name: reverse_contain
-      type: edge
-      props: []
-    error:
-      failDataPath: ./csv/reverse_contain/err/reverse_contain.csv
-      logPath: ./csv/reverse_contain/err/reverse_contain.log
+      failDataPath: ./csv/err/end.csv
+      logPath: ./csv/err/end.log
   - path: ./csv/inherit.csv
     type: csv
     schema:
@@ -124,5 +104,25 @@ files:
         - name: end_time
           type: timestamp
     error:
-      failDataPath: ./csv/inherit/err/inherit.csv
-      logPath: ./csv/inherit/err/inherit.log
+      failDataPath: ./csv/err/inherit.csv
+      logPath: ./csv/err/inherit.log
+  - path: ./csv/contain.csv
+    type: csv
+    schema:
+      space: wb
+      name: contain
+      type: edge
+      props: []
+    error:
+      failDataPath: ./csv/err/contain.csv
+      logPath: ./csv/err/contain.log
+  - path: ./csv/reverse_contain.csv
+    type: csv
+    schema:
+      space: wb
+      name: reverse_contain
+      type: edge
+      props: []
+    error:
+      failDataPath: ./csv/err/reverse_contain.csv
+      logPath: ./csv/err/reverse_contain.log

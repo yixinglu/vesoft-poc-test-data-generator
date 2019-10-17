@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"path"
 	"reflect"
 	"sync"
 )
@@ -114,6 +115,10 @@ func ExportReverseContainEdgesToCSVFile(filename string, edges []ReverseContainE
 }
 
 func exportToCSVFile(filename string, ifaces []interface{}) {
+	if err := os.MkdirAll(path.Dir(filename), 0755); err != nil && !os.IsExist(err) {
+		log.Fatal(err)
+	}
+
 	file, err := os.Create(filename)
 	if err != nil {
 		log.Fatal(err)
