@@ -33,10 +33,10 @@ func GenerateCluster(size int64) []Cluster {
 	return clusters
 }
 
-func GenerateDatabases(size int64) []Database {
+func GenerateDatabases(fromIdx, size int64) []Database {
 	databases := make([]Database, size)
 	for idx := range databases {
-		vid := rand.Int63n(size)
+		vid := fromIdx + int64(idx)
 		databases[idx] = Database{
 			VID:  vid,
 			DbId: fmt.Sprintf("%d", vid),
@@ -46,12 +46,12 @@ func GenerateDatabases(size int64) []Database {
 	return databases
 }
 
-func GenerateTables(size int64, clusters []Cluster, users []User) []Table {
+func GenerateTables(fromIdx, size int64, clusters []Cluster, users []User) []Table {
 	tables := make([]Table, size)
 	for idx := range tables {
 		clusterId := rand.Intn(len(clusters))
 		userId := rand.Intn(len(users))
-		vid := int64(idx)
+		vid := fromIdx + int64(idx)
 		tables[idx] = Table{
 			VID:       vid,
 			DatasetId: fmt.Sprintf("%d", vid),
@@ -71,12 +71,12 @@ var JobServerIps = [...]string{"11.36.96.2", "11.36.96.3", "11.36.96.4", "11.36.
 var OperationNames = [...]string{"QUERY", "DDL", "DML"}
 var JobTypes = [...]string{"hive", "mysql"}
 
-func GenerateJobs(size int64, users []User) []Job {
+func GenerateJobs(fromIdx, size int64, users []User) []Job {
 	jobs := make([]Job, size)
 	startTime := time.Now().Unix()
 	var endTime int64
 	for idx := range jobs {
-		vid := int64(idx)
+		vid := fromIdx + int64(idx)
 		uuid := uuid.New()
 		userId := rand.Intn(len(users))
 		jobServerIpIdx := rand.Intn(len(JobServerIps))

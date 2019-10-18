@@ -48,7 +48,7 @@ func main() {
 	vertexWG.Add(1)
 	go func() {
 		defer vertexWG.Done()
-		databases = gen.GenerateDatabases(dbCount)
+		databases = gen.GenerateDatabases(0, dbCount)
 	}()
 
 	// Table
@@ -56,7 +56,7 @@ func main() {
 	vertexWG.Add(1)
 	go func() {
 		defer vertexWG.Done()
-		tables = gen.GenerateTables(datasetCount, clusters, users)
+		tables = gen.GenerateTables(dbCount, datasetCount, clusters, users)
 	}()
 
 	// Job
@@ -64,7 +64,7 @@ func main() {
 	vertexWG.Add(1)
 	go func() {
 		defer vertexWG.Done()
-		jobs = gen.GenerateJobs(jobCount, users)
+		jobs = gen.GenerateJobs(dbCount+datasetCount, jobCount, users)
 	}()
 
 	vertexWG.Wait()
