@@ -1,128 +1,171 @@
 version: v1beta
 description: example
 settings:
-  retry: 5
-  concurrency: 5 # Graph client pool size
+  concurrency: 60 # Graph client pool size
   connection:
     user: user
     password: password
-    address: 127.0.0.1:6699
+    address: 127.0.0.1:32809
 files:
-  - path: ./csv/job.csv
+  - path: ./job.csv
+    batchSize: 10
     type: csv
+    csv:
+      withHeader: false
+      withLabel: false
     schema:
       space: wb
-      name: job
       type: vertex
-      props:
-        - name: job_id
-          type: string
-        - name: job_server_ip
-          type: string
-        - name: hive_user
-          type: string
-        - name: operation_name
-          type: string
-        - name: job_type
-          type: string
-        - name: start_time
-          type: timestamp
-        - name: end_time
-          type: timestamp
+      vertex:
+        tags:
+          - name: job
+            props:
+              - name: job_id
+                type: string
+              - name: job_server_ip
+                type: string
+              - name: hive_user
+                type: string
+              - name: operation_name
+                type: string
+              - name: job_type
+                type: string
+              - name: start_time
+                type: int
+              - name: end_time
+                type: int
     error:
-      failDataPath: ./csv/err/job.csv
-      logPath: ./csv/err/job.log
-  - path: ./csv/tbl.csv
+      failDataPath: ./err/job.csv
+      logPath: ./err/job.log
+  - path: ./tbl.csv
+    batchSize: 5
     type: csv
+    csv:
+      withLabel: false
+      withHeader: false
     schema:
       space: wb
-      name: tbl
       type: vertex
-      props:
-        - name: dataset_id
-          type: string
-        - name: cluster
-          type: string
-        - name: table_name
-          type: string
-        - name: source
-          type: string
+      vertex:
+        tags:
+          - name: tbl
+            props:
+              - name: dataset_id
+                type: int
+              - name: cluster
+                type: int
+              - name: table_name
+                type: string
+              - name: source
+                type: string
     error:
-      failDataPath: ./csv/err/tbl.csv
-      logPath: ./csv/err/tbl.log
-  - path: ./csv/db.csv
+      failDataPath: ./err/tbl.csv
+      logPath: ./err/tbl.log
+  - path: ./db.csv
+    batchSize: 5
     type: csv
+    csv:
+      withHeader: false
+      withLabel: false
     schema:
       space: wb
-      name: db
       type: vertex
-      props:
-        - name: db_id
-          type: string
+      vertex:
+        tags:
+        - name: db
+          props:
+            - name: db_id
+              type: int
     error:
-      failDataPath: ./csv/err/db.csv
-      logPath: ./csv/err/db.log
-  - path: ./csv/start.csv
+      failDataPath: ./err/db.csv
+      logPath: ./err/db.log
+  - path: ./start.csv
+    batchSize: 5
     type: csv
+    csv:
+      withLabel: false
+      withHeader: false
     schema:
       space: wb
-      name: start
       type: edge
-      props:
-        - name: start_time
-          type: timestamp
-        - name: end_time
-          type: timestamp
+      edge:
+        name: start
+        withRanking: false
+        props:
+          - name: start_time
+            type: int
+          - name: end_time
+            type: int
     error:
-      failDataPath: ./csv/err/start.csv
-      logPath: ./csv/err/start.log
-  - path: ./csv/end.csv
+      failDataPath: ./err/start.csv
+      logPath: ./err/start.log
+  - path: ./end.csv
+    batchSize: 5
     type: csv
+    csv:
+      withHeader: false
+      withLabel: false
     schema:
       space: wb
-      name: end
       type: edge
-      props:
-        - name: start_time
-          type: timestamp
-        - name: end_time
-          type: timestamp
+      edge:
+        name: end
+        props:
+          - name: start_time
+            type: int
+          - name: end_time
+            type: int
     error:
-      failDataPath: ./csv/err/end.csv
-      logPath: ./csv/err/end.log
-  - path: ./csv/inherit.csv
+      failDataPath: ./err/end.csv
+      logPath: ./err/end.log
+  - path: ./inherit.csv
+    batchSize: 5
     type: csv
+    csv:
+      withHeader: false
+      withLabel: false
     schema:
       space: wb
-      name: inherit
       type: edge
-      props:
-        - name: job_id
-          type: string
-        - name: start_time
-          type: timestamp
-        - name: end_time
-          type: timestamp
+      edge:
+        name: inherit
+        props:
+          - name: job_id
+            type: string
+          - name: start_time
+            type: int
+          - name: end_time
+            type: int
     error:
-      failDataPath: ./csv/err/inherit.csv
-      logPath: ./csv/err/inherit.log
-  - path: ./csv/contain.csv
+      failDataPath: ./err/inherit.csv
+      logPath: ./err/inherit.log
+  - path: ./contain.csv
+    batchSize: 5
     type: csv
+    csv:
+      withHeader: false
+      withLabel: false
     schema:
       space: wb
-      name: contain
       type: edge
-      props: []
+      edge:
+        name: contain
+        props: []
     error:
-      failDataPath: ./csv/err/contain.csv
-      logPath: ./csv/err/contain.log
-  - path: ./csv/reverse_contain.csv
+      failDataPath: ./err/contain.csv
+      logPath: ./err/contain.log
+  - path: ./reverse_contain.csv
+    batchSize: 5
     type: csv
+    csv:
+      withHeader: false
+      withLabel: false
     schema:
       space: wb
-      name: reverse_contain
       type: edge
-      props: []
+      edge:
+        name: reverse_contain
+        props: []
     error:
-      failDataPath: ./csv/err/reverse_contain.csv
-      logPath: ./csv/err/reverse_contain.log
+      failDataPath: ./err/reverse_contain.csv
+      logPath: ./err/reverse_contain.log

@@ -85,7 +85,7 @@ func main() {
 func generateAndExportDbRelatedEdges(tables []gen.Table, databases []gen.Database, wg *sync.WaitGroup) {
 	defer wg.Done()
 
-	containEdges, reverseContainEdges := gen.GenerateContainEdge(tables, databases)
+	containEdges, reverseContainEdges := gen.GenerateContainEdges(tables, databases)
 	var expWG sync.WaitGroup
 	gen.ExportContainEdgesToCSVFile(fmt.Sprintf("%s/%s", *dir, "contain.csv"), containEdges, &expWG)
 	gen.ExportReverseContainEdgesToCSVFile(fmt.Sprintf("%s/%s", *dir, "reverse_contain.csv"), reverseContainEdges, &expWG)

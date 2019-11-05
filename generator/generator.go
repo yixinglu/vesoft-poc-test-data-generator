@@ -27,7 +27,7 @@ func GenerateCluster(size int64) []Cluster {
 	clusters := make([]Cluster, size)
 	for idx := range clusters {
 		clusters[idx] = Cluster{
-			Name: fmt.Sprintf("j%d", idx),
+			Name: int64(idx),
 		}
 	}
 	return clusters
@@ -39,7 +39,7 @@ func GenerateDatabases(fromIdx, size int64) []Database {
 		vid := fromIdx + int64(idx)
 		databases[idx] = Database{
 			VID:  vid,
-			DbId: fmt.Sprintf("%d", vid),
+			DbId: vid,
 		}
 	}
 	log.Printf("Finish generate databases: %d", len(databases))
@@ -54,7 +54,7 @@ func GenerateTables(fromIdx, size int64, clusters []Cluster, users []User) []Tab
 		vid := fromIdx + int64(idx)
 		tables[idx] = Table{
 			VID:       vid,
-			DatasetId: fmt.Sprintf("%d", vid),
+			DatasetId: vid,
 			Cluster:   clusters[clusterId].Name,
 			TableName: fmt.Sprintf("table%d", idx),
 			Source:    users[userId].Source,
@@ -102,7 +102,7 @@ func GenerateJobs(fromIdx, size int64, users []User) []Job {
 	return jobs
 }
 
-func GenerateContainEdge(tables []Table, databases []Database) (containEdges []ContainEdge, reverseContainEdges []ReverseContainEdge) {
+func GenerateContainEdges(tables []Table, databases []Database) (containEdges []ContainEdge, reverseContainEdges []ReverseContainEdge) {
 	for _, table := range tables {
 		dbVID := rand.Intn(len(databases))
 		containEdge := ContainEdge{

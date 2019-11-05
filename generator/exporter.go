@@ -139,11 +139,12 @@ func Record(t interface{}) []string {
 	record := make([]string, numFields)
 	for i := range record {
 		f := reflect.ValueOf(t).Field(i)
-		if f.Type().Name() == "string" {
-			record[i] = fmt.Sprintf("\"%s\"", f.Interface())
-		} else {
-			record[i] = fmt.Sprintf("%v", f.Interface())
-		}
+		// if f.Type().Name() == "string" {
+		// 	record[i] = fmt.Sprintf("\"%s\"", f.Interface())
+		// } else {
+		// 	record[i] = fmt.Sprintf("%v", f.Interface())
+		// }
+		record[i] = fmt.Sprintf("%v", f.Interface())
 	}
 	return record
 }

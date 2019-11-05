@@ -12,18 +12,18 @@ type User struct {
 }
 
 type Cluster struct {
-	Name string
+	Name int64
 }
 
 type Database struct {
 	VID  int64
-	DbId string
+	DbId int64
 }
 
 type Table struct {
 	VID       int64
-	DatasetId string
-	Cluster   string
+	DatasetId int64
+	Cluster   int64
 	TableName string
 	Source    string
 }
@@ -72,11 +72,11 @@ type ReverseContainEdge struct {
 }
 
 func (db *Database) String() string {
-	return fmt.Sprintf("db(vid: %d, db_id:%s)", db.VID, db.DbId)
+	return fmt.Sprintf("db(vid: %d, db_id:%d)", db.VID, db.DbId)
 }
 
 func (t *Table) String() string {
-	return fmt.Sprintf("table(vid:%d, dataset:%s, name:%s, cluster:%s, source:%s)",
+	return fmt.Sprintf("table(vid:%d, dataset:%d, name:%s, cluster:%d, source:%s)",
 		t.VID, t.DatasetId, t.TableName, t.Cluster, t.Source)
 }
 
