@@ -1,4 +1,4 @@
-version: v1beta
+version: v1rc1
 description: example
 settings:
   concurrency: 60 # Graph client pool size
@@ -6,15 +6,18 @@ settings:
     user: user
     password: password
     address: 127.0.0.1:32809
+  channelBufferSize: 128
+  space: wb
+logPath: ./err/wb.log
 files:
   - path: ./job.csv
+    failDataPath: ./err/job.csv
     batchSize: 10
     type: csv
     csv:
       withHeader: false
       withLabel: false
     schema:
-      space: wb
       type: vertex
       vertex:
         tags:
@@ -34,17 +37,14 @@ files:
                 type: int
               - name: end_time
                 type: int
-    error:
-      failDataPath: ./err/job.csv
-      logPath: ./err/job.log
   - path: ./tbl.csv
+    failDataPath: ./err/tbl.csv
     batchSize: 5
     type: csv
     csv:
       withLabel: false
       withHeader: false
     schema:
-      space: wb
       type: vertex
       vertex:
         tags:
@@ -58,17 +58,14 @@ files:
                 type: string
               - name: source
                 type: string
-    error:
-      failDataPath: ./err/tbl.csv
-      logPath: ./err/tbl.log
   - path: ./db.csv
+    failDataPath: ./err/db.csv
     batchSize: 5
     type: csv
     csv:
       withHeader: false
       withLabel: false
     schema:
-      space: wb
       type: vertex
       vertex:
         tags:
@@ -76,17 +73,14 @@ files:
           props:
             - name: db_id
               type: int
-    error:
-      failDataPath: ./err/db.csv
-      logPath: ./err/db.log
   - path: ./start.csv
+    failDataPath: ./err/start.csv
     batchSize: 5
     type: csv
     csv:
       withLabel: false
       withHeader: false
     schema:
-      space: wb
       type: edge
       edge:
         name: start
@@ -96,17 +90,14 @@ files:
             type: int
           - name: end_time
             type: int
-    error:
-      failDataPath: ./err/start.csv
-      logPath: ./err/start.log
   - path: ./end.csv
+    failDataPath: ./err/end.csv
     batchSize: 5
     type: csv
     csv:
       withHeader: false
       withLabel: false
     schema:
-      space: wb
       type: edge
       edge:
         name: end
@@ -115,17 +106,14 @@ files:
             type: int
           - name: end_time
             type: int
-    error:
-      failDataPath: ./err/end.csv
-      logPath: ./err/end.log
   - path: ./inherit.csv
+    failDataPath: ./err/inherit.csv
     batchSize: 5
     type: csv
     csv:
       withHeader: false
       withLabel: false
     schema:
-      space: wb
       type: edge
       edge:
         name: inherit
@@ -136,36 +124,27 @@ files:
             type: int
           - name: end_time
             type: int
-    error:
-      failDataPath: ./err/inherit.csv
-      logPath: ./err/inherit.log
   - path: ./contain.csv
+    failDataPath: ./err/contain.csv
     batchSize: 5
     type: csv
     csv:
       withHeader: false
       withLabel: false
     schema:
-      space: wb
       type: edge
       edge:
         name: contain
         props: []
-    error:
-      failDataPath: ./err/contain.csv
-      logPath: ./err/contain.log
   - path: ./reverse_contain.csv
+    failDataPath: ./err/reverse_contain.csv
     batchSize: 5
     type: csv
     csv:
       withHeader: false
       withLabel: false
     schema:
-      space: wb
       type: edge
       edge:
         name: reverse_contain
         props: []
-    error:
-      failDataPath: ./err/reverse_contain.csv
-      logPath: ./err/reverse_contain.log
